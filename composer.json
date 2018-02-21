@@ -9,5 +9,8 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "ixudra/curl": "dev-master",
+        "guzzlehttp/guzzle": "^6.2@dev"
+    }
 }

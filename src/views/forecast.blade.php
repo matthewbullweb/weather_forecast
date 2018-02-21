@@ -108,13 +108,18 @@
                     @foreach($ips AS $ip)
                     <div class="row">
                         <div class="col-md-2">
-                            <i class="fa fa-5x fa-cloud"></i>
+                            @if($ip['status']=='Clouds')<i class="fa fa-5x fa-fw fa-cloud"></i>@endif
+                            @if(in_array($ip['status'],['Rain','Drizzle']))<i class="fa fa-5x fa-fw fa-tint"></i>@endif
+                            @if(in_array($ip['status'],['Clear','Sun'])<i class="fa fa-5x fa-fw fa-sun-o"></i>@endif
+                            <br/>
+                            <center>{{ $ip['status'] }}</center>
                         </div>
                         <div class="col-md-3">
                             {{ $ip['ip'] }}
                         </div>
                         <div class="col-md-3">
-                            {{ $ip['location'] }}
+                            {{ $ip['location'] }}<br/>
+                            {{ $ip['lat'] . ',' . $ip['lon']  }}
                         </div>
                         <div class="col-md-3">
                             {{ $ip['datetime'] }}
