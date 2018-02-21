@@ -1,0 +1,13 @@
+{
+    "name": "ecce/weather_forecast",
+    "description": "Gets weather infomation from an api based on ip address",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Matthew Bull",
+            "email": "matthew@matthewbullweb.co.uk"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
