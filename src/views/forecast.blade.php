@@ -110,7 +110,7 @@
                         <div class="col-md-2">
                             @if($ip['status']=='Clouds')<i class="fa fa-5x fa-fw fa-cloud"></i>@endif
                             @if(in_array($ip['status'],['Rain','Drizzle']))<i class="fa fa-5x fa-fw fa-tint"></i>@endif
-                            @if(in_array($ip['status'],['Clear','Sun'])<i class="fa fa-5x fa-fw fa-sun-o"></i>@endif
+                            @if(in_array($ip['status'],['Clear','Sun']))<i class="fa fa-5x fa-fw fa-sun-o"></i>@endif
                             <br/>
                             <center>{{ $ip['status'] }}</center>
                         </div>

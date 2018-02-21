@@ -7,6 +7,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Exception\RequestException;
+use Ixudra\Curl\Facades\Curl;
 
 class ForecastController extends Controller
 {
@@ -15,18 +16,12 @@ class ForecastController extends Controller
 		//could come from a database
 
 		$data = [
-			['ip'=>'123.211.61.50',
-			'datetime'=> null],
-			['ip'=>'122.62.248.72',
-			'datetime'=> null],
-			['ip'=>'23.19.62.102',
-			'datetime'=> null],
-			['ip'=>'105.225.185.20',
-			'datetime'=> null],
-			['ip'=>'80.62.117.27',
-			'datetime'=> null],
-			['ip'=>'68.96.102.16',
-			'datetime'=> null],
+			['ip'=>'123.211.61.50'],
+			['ip'=>'122.62.248.72'],
+			['ip'=>'23.19.62.102'],
+			['ip'=>'105.225.185.20'],
+			['ip'=>'80.62.117.27'],
+			['ip'=>'68.96.102.16'],
 		];
 
 		//workout locations using ipinfo.io api
@@ -36,7 +31,7 @@ class ForecastController extends Controller
 
 			//could check if already stored in db to save time
 
-	 		$client = new \GuzzleHttp\Client();
+	 		/*$client = new \GuzzleHttp\Client();
 	 		try {
 	 			$res = $client->request('GET', 'ipinfo.io/'.$v['ip']);
 	 		} catch (RequestException $e) {
@@ -44,12 +39,16 @@ class ForecastController extends Controller
 			    if ($e->hasResponse()) {
 			        echo Psr7\str($e->getResponse());
 			   }
-			}
+			}*/
 
-	 		if( $res->getStatusCode() == 200 ) {
+		    $res = Curl::to('ipinfo.io/'.$v['ip'])
+		    ->returnResponseObject()
+		    ->get();
+
+	 		if( $res->status == 200 ) {
 
 
-	 			$json = json_decode( (string) $res->getBody(), true);
+	 			$json = json_decode( (string) $res->content, true);
 
 	 			if( isset($json['city']) && $json['city']!="" ) {
 
