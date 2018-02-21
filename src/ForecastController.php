@@ -14,6 +14,7 @@ class ForecastController extends Controller
 	public function sample_data(){
 
 		//could come from a database
+		//now base this on simulating a post for adding new ips later
 
 		$data = [
 			['ip'=>'123.211.61.50'],
@@ -30,41 +31,29 @@ class ForecastController extends Controller
 		foreach($data as $k=>$v){
 
 			//could check if already stored in db to save time
+			//cache refresh could also be here
 
-	 		/*$client = new \GuzzleHttp\Client();
-	 		try {
-	 			$res = $client->request('GET', 'ipinfo.io/'.$v['ip']);
-	 		} catch (RequestException $e) {
-			    echo Psr7\str($e->getRequest());
-			    if ($e->hasResponse()) {
-			        echo Psr7\str($e->getResponse());
-			   }
-			}*/
+			if( $model = \Ecce\WeatherForecast\Ip::where('ip',$v['ip'])->first() )    {  //dd(  [$v['ip'], $model->toArray() ] );
 
-		    $res = Curl::to('ipinfo.io/'.$v['ip'])
-		    ->returnResponseObject()
-		    ->get();
+				//exists so load from db - no api call needed
 
-	 		if( $res->status == 200 ) {
+				$data[$k] = $model->toArray();
 
+	 			if( isset( $model->city ) && $model->city!="" ) {
 
-	 			$json = json_decode( (string) $res->content, true);
+	 				if( isset(  $model->country ) && $model->country!=""  ) {
 
-	 			if( isset($json['city']) && $json['city']!="" ) {
-
-	 				if( isset($json['country']) && $json['country']!=""  ) {
-
-	 					$data[$k]['location'] = $json['city'] . ', ' . $json['country'];
+	 					$data[$k]['location'] = $model->city . ', ' . $model->country;
 
 	 				} else {
 
-	 					$data[$k]['location'] = $json['city'];
+	 					$data[$k]['location'] = $model->city;
 	 				}
 
 	 			} else {
-	 				if( isset($json['country']) && $json['country']!=""  ) {
+	 				if( isset( $model->country ) && $model->country!=""  ) {
 
-	 					$data[$k]['location'] = $json['country'];
+	 					$data[$k]['location'] = $model->country;
 
 	 				} else {
 
@@ -72,24 +61,83 @@ class ForecastController extends Controller
 	 				}
 	 			}
 
-	 			//$data[$k]['location'] = $json;
+
+	 			$data[$k]['datetime'] = now();
 
 
-	 		} else {
-				$data[$k]['location'] = 'Unknown';
-	 		}
 
-			$data[$k]['datetime'] = now();
+			}
+			else {
+
+				//does not exist
+
+			    $res = Curl::to('ipinfo.io/'.$v['ip'])
+			    ->returnResponseObject()
+			    ->get();
+
+		 		if( $res->status == 200 ) {
 
 
-			$loc = explode(",", $json['loc'] );
+		 			$json = json_decode( (string) $res->content, true);
+
+		 			if( isset($json['city']) && $json['city']!="" ) {
+
+		 				if( isset($json['country']) && $json['country']!=""  ) {
+
+		 					$data[$k]['location'] = $json['city'] . ', ' . $json['country'];
+
+		 				} else {
+
+		 					$data[$k]['location'] = $json['city'];
+		 				}
+
+		 			} else {
+		 				if( isset($json['country']) && $json['country']!=""  ) {
+
+		 					$data[$k]['location'] = $json['country'];
+
+		 				} else {
+
+		 					$data[$k]['location'] = 'Unknown';
+		 				}
+		 			}
+
+		 			//$data[$k]['location'] = $json;
 
 
-			$data[$k]['lat'] = $loc[0];
-			$data[$k]['lon'] = $loc[1];
+		 		} else {
+					$data[$k]['location'] = 'Unknown';
+		 		}
+
+				$data[$k]['datetime'] = now();
+
+
+				$loc = explode(",", $json['loc'] );
+
+
+				$data[$k]['lat'] = $loc[0];
+				$data[$k]['lon'] = $loc[1];
+
+				//add to db for later - could cache for 30 mins
+
+				if( !\Ecce\WeatherForecast\Ip::where('ip',$v['ip'])->first() ) {
+
+					$Ip = new \Ecce\WeatherForecast\Ip;
+
+			        $Ip->ip = $data[$k]['ip']; //make unique?
+			        $Ip->city = $json['city'];
+			        $Ip->country = $data[$k]['location'];
+			        $Ip->lat = $data[$k]['lat'];
+			        $Ip->lon = $data[$k]['lon'];
+
+			        $Ip->save();
+
+		    	}
+
+		    }
+
 
 		}
-
 
 		//dd($data);
 

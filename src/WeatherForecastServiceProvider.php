@@ -26,5 +26,6 @@ class WeatherForecastServiceProvider extends ServiceProvider
     {
         $this->app->make('Ecce\WeatherForecast\ForecastController');
         $this->loadViewsFrom(__DIR__.'/views', 'forecast');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
     }
 }
