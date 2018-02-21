@@ -148,6 +148,7 @@ class ForecastController extends Controller
 	public function get(){
 		//echo 'Hello from the forecast package!';
 		$data = [];
+		$json = "";
 		$key = "9da85150f08a5e245ee5bf7af80959e0";
 		$query = "London,uk"; //default starting point
 
@@ -158,33 +159,56 @@ class ForecastController extends Controller
 		//get data from openweathermap api
 		foreach($ips AS $k=>$v){
 
-			//$query = $v['location'];
+			if( false ) { //$model = \Ecce\WeatherForecast\Forecast::where('ip',$v['ip'])->first() 
 
-	 		$client = new \GuzzleHttp\Client();
-	 		try {
-	 			//$res = $client->request('GET', 'http://api.openweathermap.org/data/2.5/weather?q='.$query.'&appid='.$key); //callback=test
-	 			//lan long maybe better
-	 			$res = $client->request('GET', 'api.openweathermap.org/data/2.5/weather?lat='.$v['lat'].'&lon='.$v['lon'].'&appid='.$key);
-	 		} catch (RequestException $e) {
-			    echo '<pre>';
-			    echo Psr7\str($e->getRequest());
-			    if ($e->hasResponse()) {
-			        echo Psr7\str($e->getResponse());
-			    }
-			    print_r($query);
-			    echo '<pre>';
-			    die();
-			}
+				$ips[$k]['status'] =  $model->status;
 
-	 		if( $res->getStatusCode() == 200 ) { //$res->getHeaderLine('content-type');
-	 			//Success
-	 			$data = $res->getBody();
-	 			$json = json_decode( (string) $data , true);  
+			} else {
 
-	 			$ips[$k]['status'] = $json['weather'][0]['main'];
-	 		} else {
-	 			//Error!
+				//$query = $v['location'];
+
+		 		$client = new \GuzzleHttp\Client();
+		 		try {
+		 			//$res = $client->request('GET', 'http://api.openweathermap.org/data/2.5/weather?q='.$query.'&appid='.$key); //callback=test
+		 			//lan long maybe better
+		 			$res = $client->request('GET', 'api.openweathermap.org/data/2.5/weather?lat='.$v['lat'].'&lon='.$v['lon'].'&appid='.$key);
+		 		} catch (RequestException $e) {
+				    echo '<pre>';
+				    echo Psr7\str($e->getRequest());
+				    if ($e->hasResponse()) {
+				        echo Psr7\str($e->getResponse());
+				    }
+				    print_r($query);
+				    echo '<pre>';
+				    die();
+				}
+
+		 		if( $res->getStatusCode() == 200 ) { //$res->getHeaderLine('content-type');
+		 			//Success
+		 			$data = $res->getBody();
+		 			$json = json_decode( (string) $data , true);  
+
+		 			$ips[$k]['status'] = $json['weather'][0]['main'];
+		 		} else {
+		 			//Error!
+		 		}
+
+
+				//add to db for later - could cache for 30 mins
+
+				if( !\Ecce\WeatherForecast\Forecast::where('ip',$v['ip'])->first() ) {
+
+					$Ip = new \Ecce\WeatherForecast\Forecast;
+
+			        $Ip->ip = $ips[$k]['ip']; //make unique?
+			        $Ip->status = $ips[$k]['status'];
+
+			        $Ip->save();
+
+		    	}
+
 	 		}
+
  		}
 
  		return view('forecast::forecast', ['ips' => $ips, 'data' => $data, 'json' => $json]);

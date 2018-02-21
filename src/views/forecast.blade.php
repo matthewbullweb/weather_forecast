@@ -20,7 +20,7 @@
                         <pre>{{ $data }}</pre>
                         <p>&nbsp;</p>
                         <h2>Json decode</h2>
-                        <pre>{{ var_dump($json) }}</pre>
+
                 </div>
             </div>
         </div>
